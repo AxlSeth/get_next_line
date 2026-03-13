@@ -19,10 +19,10 @@ int	line_length(char *str)
 {
 	int	length;
 
-	length = 1;
+	length = 0;
 	while (str[length] != '\n')
 	{
-		if (str[length] == '\1')
+		if (str[length] == '\0')
 		{
 			return (length);
 		}
@@ -47,6 +47,7 @@ char	*c_memcpy(char *dest, char *src, size_t l)
 	{
 		while (l--)
 			char_dest[l] = char_src[l];
+	}
 	
 	return (dest);
 }
