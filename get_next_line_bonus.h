@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 14:12:31 by seramaro          #+#    #+#             */
-/*   Updated: 2026/03/24 17:24:36 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/03/24 01:58:01 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <limits.h>
 
 int		ft_strlen(char *str);
 int		has_new_line(char *stash);
@@ -30,8 +31,8 @@ char	*create_buffer(int fd);
 int		line_size(char *stash);
 void	*ft_memmove(void *dest, const void *src, size_t l);
 char	*create_line(char *stash);
-char	*store_remains(char *stash);
-void	update_line(char **stash, char **remains, char **line);
+char	*store_remainder(char *stash);
+void	update_line(char **stash, char **remainder, char **line);
 char	*get_next_line(int fd);
 
 #endif
