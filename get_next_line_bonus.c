@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:32:35 by seramaro          #+#    #+#             */
-/*   Updated: 2026/03/24 14:08:02 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/03/26 09:56:05 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,88 +14,78 @@
 
 void	*ft_memmove(void *dest, const void *src, size_t l)
 {
-	unsigned char	*char_dest;
-	unsigned char	*char_src;
+	unsigned char	*d;
+	unsigned char	*s;
 
-	char_dest = (unsigned char *)dest;
-	char_src = (unsigned char *)src;
-	if (char_dest < char_src)
-	{
+	d = (unsigned char *)dest;
+	s = (unsigned char *)src;
+	if (d < s)
 		while (l--)
-			*char_dest++ = *char_src++;
-	}
-	else if (char_dest > char_src)
-	{
+			*d++ = *s++;
+	else
 		while (l--)
-			char_dest[l] = char_src[l];
-	}
+			d[l] = s[l];
 	return (dest);
 }
 
-char	*create_line(char *stash)
+static char	*read_until_nl(int fd, char *stash)
+{
+	char	*buf;
+	char	*tmp;
+
+	while (stash && !has_new_line(stash))
+	{
+		buf = create_buffer(fd);
+		if (!buf)
+			break ;
+		tmp = stash;
+		stash = append(tmp, buf);
+		free(tmp);
+		free(buf);
+		if (!stash)
+			return (NULL);
+	}
+	return (stash);
+}
+
+static char	*extract_line_and_update_stash(char **stash)
 {
 	char	*line;
+	char	*new_stash;
+	size_t	n;
+	size_t	len;
 
-	line = malloc(sizeof(char) * (line_size(stash) + 1));
-	line = (char *)ft_memmove(line, stash, (line_size(stash)));
-	line[line_size(stash)] = '\0';
+	if (!stash || !*stash || **stash == '\0')
+		return (free(*stash), *stash = NULL, NULL);
+	n = line_size(*stash);
+	line = malloc(n + 1);
+	if (!line)
+		return (NULL);
+	ft_memmove(line, *stash, n);
+	line[n] = '\0';
+	len = ft_strlen(*stash) - n;
+	if (!len)
+		return (free(*stash), *stash = NULL, line);
+	new_stash = malloc(len + 1);
+	if (!new_stash)
+		return (free(line), NULL);
+	ft_memmove(new_stash, *stash + n, len);
+	new_stash[len] = '\0';
+	free(*stash);
+	*stash = new_stash;
 	return (line);
-}
-
-char	*store_remainder(char *stash)
-{
-	int		len;
-	char	*remainder;
-
-	len = ft_strlen(stash) - line_size(stash);
-	remainder = malloc(sizeof(char) * (len + 1));
-	remainder = ft_memmove(remainder, (stash + line_size(stash)), len);
-	remainder[len] = '\0';
-	return (remainder);
-}
-
-void	update_line(char **stash, char **remainder, char **line)
-{
-	if (has_new_line(*stash))
-	{
-		*line = create_line(*stash);
-		*remainder = store_remainder(*stash);
-		free(*stash);
-		*stash = *remainder;
-	}
-	else if (*stash != NULL)
-	{
-		*line = create_line(*stash);
-		free(*stash);
-		*stash = NULL;
-	}
 }
 
 char	*get_next_line(int fd)
 {
 	static char	*stash[1024];
-	char		*line;
-	char		*remainder;
-	char		*old_stash;
-	char		*buf;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	if (stash[fd] == NULL)
+	if (!stash[fd])
 		stash[fd] = create_buffer(fd);
-	while (!has_new_line(stash[fd]))
-	{
-		old_stash = stash[fd];
-		buf = create_buffer(fd);
-		if (!buf)
-			break ;
-		stash[fd] = append(old_stash, buf);
-		free(old_stash);
-		free(buf);
-	}
-	update_line(&stash[fd], &remainder, &line);
-	if (*line)
-		return (line);
-	else
+	stash[fd] = read_until_nl(fd, stash[fd]);
+	if (!stash[fd])
 		return (NULL);
+	return (extract_line_and_update_stash(&stash[fd]));
 }

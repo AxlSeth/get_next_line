@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 01:43:30 by seramaro          #+#    #+#             */
-/*   Updated: 2026/03/24 01:46:54 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/03/26 09:17:49 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ char	*append(char *s1, char *s2)
 	str = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
 	i = 0;
 	j = 0;
+	if (!str)
+		return (NULL);
 	while (s1[i])
 	{
 		str[i] = s1[i];
@@ -76,7 +78,10 @@ char	*create_buffer(int fd)
 		return (NULL);
 	}
 	else if (end == -1)
+	{
+		free(buffer);
 		return (NULL);
+	}
 	buffer[end] = '\0';
 	return (buffer);
 }
