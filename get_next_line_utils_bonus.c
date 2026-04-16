@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 01:43:30 by seramaro          #+#    #+#             */
-/*   Updated: 2026/04/16 13:08:30 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/04/16 19:31:53 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,8 +99,5 @@ int	line_size(char *stash)
 			return (position + 1);
 		position++;
 	}
-	if (has_new_line(stash))
-		return (position + 1);
-	else
-		return (position);
+	return (position);
 }

@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:32:35 by seramaro          #+#    #+#             */
-/*   Updated: 2026/04/16 13:21:26 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/04/16 19:29:20 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ char	*get_next_line(int fd)
 {
 	static char	*stash[1024];
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= 1024)
+	if (fd >= 1024 || fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (!stash[fd])
 		stash[fd] = create_buffer(fd);
