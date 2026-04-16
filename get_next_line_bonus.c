@@ -68,7 +68,12 @@ static char	*extract_line_and_update_stash(char **stash)
 		return (free(*stash), *stash = NULL, line);
 	new_stash = malloc(len + 1);
 	if (!new_stash)
-		return (free(*stash), *stash = NULL, free(line), NULL);
+	{
+		free(line);
+		free(*stash);
+		*stash = NULL;
+		return (NULL);
+	}
 	ft_memmove(new_stash, *stash + n, len);
 	new_stash[len] = '\0';
 	free(*stash);
@@ -79,8 +84,8 @@ static char	*extract_line_and_update_stash(char **stash)
 char	*get_next_line(int fd)
 {
 	static char	*stash[1024];
-
-	if (fd >= 1024 || fd < 0 || BUFFER_SIZE <= 0)
+	
+	if (fd < 0 || fd >= 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (!stash[fd])
 		stash[fd] = create_buffer(fd);
