@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:32:35 by seramaro          #+#    #+#             */
-/*   Updated: 2026/04/16 13:24:58 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/04/16 21:29:34 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,42 +48,46 @@ static char	*read_line(int fd, char *stash)
 	return (stash);
 }
 
-static char	*extract_line_and_update_stash(char **stash)
+static char	*extract_line(char *stash)
 {
 	char	*line;
-	char	*new_stash;
 	int		n;
-	size_t	len;
 
-	if (!stash || !*stash || **stash == '\0')
-		return (free(*stash), *stash = NULL, NULL);
-	n = line_size(*stash);
+	if (!stash || *stash == '\0')
+		return (NULL);
+	n = line_size(stash);
 	line = malloc(n + 1);
 	if (!line)
 		return (NULL);
-	ft_memmove(line, *stash, n);
+	ft_memmove(line, stash, n);
 	line[n] = '\0';
+	return (line);
+}
+
+static int	update_stash(char **stash)
+{
+	char	*new_stash;
+	size_t	n;
+	size_t	len;
+
+	n = line_size(*stash);
 	len = ft_strlen(*stash) - n;
-	if (!len)
-		return (free(*stash), *stash = NULL, line);
+	if (len == 0)
+		return (free(*stash), *stash = NULL, 1);
 	new_stash = malloc(len + 1);
 	if (!new_stash)
-	{
-		free(line);
-		free(*stash);
-		*stash = NULL;
-		return (NULL);
-	}
+		return (free(*stash), *stash = NULL, 0);
 	ft_memmove(new_stash, *stash + n, len);
 	new_stash[len] = '\0';
 	free(*stash);
 	*stash = new_stash;
-	return (line);
+	return (1);
 }
 
 char	*get_next_line(int fd)
 {
 	static char	*stash;
+	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -92,5 +96,8 @@ char	*get_next_line(int fd)
 	stash = read_line(fd, stash);
 	if (!stash)
 		return (NULL);
-	return (extract_line_and_update_stash(&stash));
+	line = extract_line(stash);
+	if (!line || !update_stash(&stash))
+		return (free(line), NULL);
+	return (line);
 }
