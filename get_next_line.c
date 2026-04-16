@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:32:35 by seramaro          #+#    #+#             */
-/*   Updated: 2026/04/16 11:20:40 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/04/16 13:19:38 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ static char	*extract_line_and_update_stash(char **stash)
 {
 	char	*line;
 	char	*new_stash;
-	size_t	n;
+	int		n;
 	size_t	len;
 
 	if (!stash || !*stash || **stash == '\0')
@@ -65,17 +65,10 @@ static char	*extract_line_and_update_stash(char **stash)
 	line[n] = '\0';
 	len = ft_strlen(*stash) - n;
 	if (!len)
-	{
-		free(*stash);
-		*stash = NULL;
-		return (line);
-	}
+		return (free(*stash), *stash = NULL, line);
 	new_stash = malloc(len + 1);
 	if (!new_stash)
-	{
-		free(line);
-		return (NULL);
-	}
+		return (free(*stash), *stash = NULL, free(line), NULL);
 	ft_memmove(new_stash, *stash + n, len);
 	new_stash[len] = '\0';
 	free(*stash);

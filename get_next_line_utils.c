@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 01:43:30 by seramaro          #+#    #+#             */
-/*   Updated: 2026/04/16 10:58:40 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/04/16 13:07:59 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	ft_strlen(char *str)
 	int	i;
 
 	i = 0;
-	while (str[i])
+	while (str && str[i])
 		i++;
 	return (i);
 }
@@ -72,7 +72,7 @@ char	*create_buffer(int fd)
 
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
-		return(NULL);
+		return (NULL);
 	end = read(fd, buffer, BUFFER_SIZE);
 	if (end == 0)
 	{

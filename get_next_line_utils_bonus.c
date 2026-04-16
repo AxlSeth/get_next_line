@@ -6,7 +6,7 @@
 /*   By: seramaro <seramaro@student.42antananarivo  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 01:43:30 by seramaro          #+#    #+#             */
-/*   Updated: 2026/04/16 10:59:50 by seramaro         ###   ########.fr       */
+/*   Updated: 2026/04/16 13:08:30 by seramaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,12 +67,12 @@ char	*append(char *s1, char *s2)
 
 char	*create_buffer(int fd)
 {
-	char	*buffer;
-	int		end;
+	char		*buffer;
+	ssize_t		end;
 
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
-		return(NULL);
+		return (NULL);
 	end = read(fd, buffer, BUFFER_SIZE);
 	if (end == 0)
 	{
