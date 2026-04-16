@@ -11,43 +11,97 @@
 
 &nbsp;
 # DESCRIPTION
-This functions is used to return a line (a string ended by \n) from any given file descriptor. After each call, it returns the line after the one returned from the previous call.<br>I don't know what else to say about it... also, static variables are cool.<br>
+`get_next_line(int fd)` reads from a file descriptor and returns the next line on each call.
+
+- A **line** is the bytes up to and **including** the first `\n` found (if present).
+- If EOF is reached and there is remaining data **without** a trailing `\n`, that remaining data is returned as the last line.
+- When there is nothing left to read (or on error), the function returns `NULL`.
+
+This repository includes:
+- **Mandatory** version: uses a single static stash (`static char *stash`) → intended for **one fd at a time**.
+- **Bonus** version: uses one stash per fd (`static char *stash[1024]`) → supports **multiple fds** interleaved.
+
+&nbsp;
+# BUFFER_SIZE
+The function reads in chunks of `BUFFER_SIZE` bytes.
+
+- If `BUFFER_SIZE` is not defined at compile time, it defaults to **7** (`#define BUFFER_SIZE 07`).
+- You can override it when compiling with `-D BUFFER_SIZE=<value>`.
 
 &nbsp;
 # INSTRUCTIONS
-You have to create your main function first. In this main fuction, you will have to open a file descriptor (using the open() function), and then pass the file descriptor's number identifier to the get_next_line() function call, as such:
+You have to create your `main()` function first. In this `main()`, you will:
+1) open a file descriptor (using `open()`),
+2) call `get_next_line(fd)` until it returns `NULL`,
+3) `free()` every returned line.
+
+Example (mandatory version):
 ```c
-get_next_line(fd);
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "get_next_line.h"
+
+int main(void)
+{
+    int   fd;
+    char *line;
+
+    fd = open("file.txt", O_RDONLY);
+    if (fd < 0)
+        return (1);
+
+    while ((line = get_next_line(fd)) != NULL)
+    {
+        printf("%s", line);
+        free(line);
+    }
+    close(fd);
+    return (0);
+}
 ```
-**NB:** Note that fd has to be a positive integer ranging from 0 to 1024. You won't need that much files open anyway.
+
+Compile (example):
+```sh
+cc -Wall -Wextra -Werror -D BUFFER_SIZE=42 \
+  get_next_line.c get_next_line_utils.c main.c
+```
+
+Bonus version (example):
+```sh
+cc -Wall -Wextra -Werror -D BUFFER_SIZE=42 \
+  get_next_line_bonus.c get_next_line_utils_bonus.c main.c
+```
+
+**NB:** In the *bonus* version, `fd` must be in the range `0..1023` (the code uses `static char *stash[1024]`).
+
+&nbsp;
+# NOTES (based on this implementation)
+- Mandatory: because it uses a single `static char *stash`, switching between different fds without finishing the first one will mix state.
+- On EOF, the last line is returned even if it doesn’t end with `\n`.
+- On `read()` returning `-1` (error), this implementation returns `NULL`.
+- Returned strings are heap-allocated → you must `free()` them.
 
 &nbsp;
 # RESOURCES
-- My brain
-- C documentation from the man pages
+- C documentation from the man pages (`read(2)`, `open(2)`, `close(2)`)
 - https://www.youtube.com/@PortfolioCourses
 - https://www.youtube.com/watch?v=-Mt2FdJjVno&list=PLPqnnyLDYcuGXkdP_yK63cA-GSwdgb7vm
 
 &nbsp;
 # DETAILED EXPLANATION
+This implementation keeps unread data in a **static stash** between calls.
 
-`get_next_line()` works by maintaining a `static char *stash` that persists between calls to the function, acting as a buffer that accumulates raw data read from the file descriptor. Because it is static, it is initialized to `NULL` once and retains its value after the function returns, meaning leftover data from one call is still available on the next.
+## Mandatory (`get_next_line.c`)
+- Uses `static char *stash;`.
+- First call creates an initial buffer with `create_buffer(fd)`.
+- Then it keeps reading chunks (`create_buffer(fd)` → `read(fd, ..., BUFFER_SIZE)`) and appending them to the stash with `append()` until the stash contains a `\n` or `read()` hits EOF.
+- Once a full line is available, it allocates a `line` of size `line_size(stash)` and copies that part with `ft_memmove()`.
+- The remainder after the extracted line becomes the new stash (allocated, copied, old stash freed).
 
-&nbsp;
-
-On each call, if the stash does not already contain a newline character, the function enters a loop that repeatedly calls `read()` to fetch `BUFFER_SIZE` bytes at a time, appending each new chunk to the stash using `append()` — which allocates a fresh joined string, then frees both the old stash and the temporary buffer to avoid memory leaks. This loop continues until either a `\n` is found in the stash, meaning a complete line is available, or `read()` returns `0` signaling end of file, in which case the loop breaks immediately without corrupting the stash.
-
-&nbsp;
-
-Once a complete line is ready, `create_line()` allocates a new string and copies everything from the beginning of the stash up to and including the `\n`, null-terminating it to produce the return value. Then `store_remainder()` allocates another new string containing everything after the `\n`, the old stash is freed, and the stash pointer is updated to point to this remainder so the next call to `get_next_line()` starts with the leftover data already in place rather than reading from scratch.
-
-&nbsp;
-
-If the loop exits because `read()` returned `0` and no `\n` was found, the entire remaining stash is returned as the final line without a `\n`. The stash is then freed and set to `NULL`, so the subsequent call returns `NULL` to signal that the file has been fully read. The function returns the line including its `\n` in all normal cases, without it only when the file doesn't end with one, and `NULL` on completion or error.
-
-&nbsp;
-
-The bonus version replaces the single static pointer with a static array `static char *stash[OPEN_MAX]`, giving each file descriptor its own independent stash slot at `stash[fd]`. This allows the function to read from multiple file descriptors simultaneously without any interference between them, while still counting as a single static variable.
+## Bonus (`get_next_line_bonus.c`)
+The bonus version replaces the single static pointer with a static array `static char *stash[1024]`, giving each file descriptor its own independent stash at `stash[fd]`. This allows you to call `get_next_line()` on different fds without mixing their states.
 
 That's it.
 
@@ -59,4 +113,4 @@ That's it.
 
 <div style="text-align: center;">
   <b style="font-size: 120px;">Thank You!</b>
-</div>
+</div
