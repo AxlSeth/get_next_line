@@ -68,7 +68,12 @@ static char	*extract_line_and_update_stash(char **stash)
 		return (free(*stash), *stash = NULL, line);
 	new_stash = malloc(len + 1);
 	if (!new_stash)
-		return (free(*stash), *stash = NULL, free(line), NULL);
+	{
+		free(line);
+		free(*stash);
+		*stash = NULL;
+		return (NULL);
+	}
 	ft_memmove(new_stash, *stash + n, len);
 	new_stash[len] = '\0';
 	free(*stash);
